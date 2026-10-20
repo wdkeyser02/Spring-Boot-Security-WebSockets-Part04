@@ -18,22 +18,23 @@
 		<br />
 	</div>
 
-	<div hx-ws:connect="/message" hx-trigger="click from:#connect"
-		hx-target="#button" hx-swap="innerHTML" hx-swap-oob="true">
+	<div hx-ws:connect="/message" hx-trigger="click from:#connect" hx-target="#button" hx-swap="innerHTML" hx-swap-oob="true">
 
-	<div>
-		<form hx-ws:send>
-			<label for="userid">UserId: </label> <input type="text" name="userid"
-				placeholder="Type a UserId..." required class="field" /><br /> <label
-				for="message">Message: </label> <input type="text" name="message"
-				placeholder="Type a message..." required class="field" /><br />
-			<button type="submit" class="field">Click to update Message!</button>
-		</form>
-		<div id="message" class="message-box">
-			<h2>Message</h2>
-			<p>Wait for live Message data...</p>
+		<div>
+			<form hx-ws:send>
+				<label for="userid">UserId: </label> <input type="text"
+					name="userid" placeholder="Type a UserId..." required class="field" /><br />
+				<label for="message">Message: </label> <input type="text"
+					name="message" placeholder="Type a message..." required
+					class="field" /><br />
+				<button type="submit" class="field">Click to update
+					Message!</button>
+			</form>
+			<div id="message" class="message-box">
+				<h2>Message</h2>
+				<p>Wait for live Message data...</p>
+			</div>
 		</div>
-	</div>
 	</div>
 </body>
 </html>
