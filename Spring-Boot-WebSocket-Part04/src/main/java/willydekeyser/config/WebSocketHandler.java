@@ -18,36 +18,48 @@ public class WebSocketHandler extends TextWebSocketHandler {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
-    public void afterConnectionEstablished(WebSocketSession session) {
+    public void afterConnectionEstablished(WebSocketSession session) throws IOException {
         sessions.add(session);
+        for (WebSocketSession activeSession : sessions) {
+            if (activeSession.isOpen()) {
+                try {
+                	activeSession.sendMessage(new TextMessage(CreateString(activeSession)));
+                } catch (IOException e) {
+                    sessions.remove(activeSession);
+				}
+            }
+        }
     }
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, org.springframework.web.socket.CloseStatus status) {
         sessions.remove(session);
+        for (WebSocketSession activeSession : sessions) {
+            if (activeSession.isOpen()) {
+                try {        
+                	activeSession.sendMessage(new TextMessage(CreateString(activeSession)));
+                } catch (IOException e) {
+                    sessions.remove(activeSession);
+				}
+            }
+        }
     }
 
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
-    	
-    	System.out.println("Message: " + message + " - " + message.getPayload());
     	JsonNode jsonNode = objectMapper.readTree(message.getPayload());
-    	String userMessage = jsonNode.get("chatMessage-1").asString();
-    	String message2 = jsonNode.get("chatMessage-2").asString();
+    	String userid = jsonNode.get("userid").asString();
+    	String textmessage = jsonNode.get("message").asString();
         
         String htmlFragment = """
-            <div id="message" class="message-box" hx-swap-oob="true">
-                <h2>Message</h2>
-                <p style="font-size: 24px; font-weight: bold; color: #2ecc71;">%s</p>
+            <div id="message" class="message-box" hx-swap-oob="beforeend">
+                <p>Message from sessionId: %s</p>
                 <p>%s</p>
-                <p style="font-size: 12px; color: gray;">Latest update: %s</p>
-                <p>Session ID: %s</p>
-                <p>Thread ID: %s</p>
             </div>
-            """.formatted(userMessage, message2, java.time.LocalTime.now().toString().substring(0, 8), session.getId(), Thread.currentThread().threadId());
+            """.formatted(session.getId(), textmessage);
 
         for (WebSocketSession activeSession : sessions) {
-            if (activeSession.isOpen()) {
+            if (activeSession.getId().equals(userid)) {
                 try {
                 	activeSession.sendMessage(new TextMessage(htmlFragment));
                 } catch (IOException e) {
@@ -55,5 +67,15 @@ public class WebSocketHandler extends TextWebSocketHandler {
 				}
             }
         }
+    }
+    
+    private String CreateString(WebSocketSession activeSession) {
+    	StringBuilder text = new StringBuilder();
+        text.append("<p>Connected Users:</p>");
+        sessions.forEach(x -> 
+        	{if (!x.getId().equals(activeSession.getId())) {
+        		text.append("<p>" + x.getId() + "</p>");
+			}});      
+    	return text.toString();
     }
 }
